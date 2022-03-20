@@ -1,4 +1,4 @@
-/home/jundafeng/Desktop/clion-2021.2.1/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - Unix Makefiles" /home/jundafeng/CLionProjects/untitled
+/home/jundafeng/Desktop/clion-2021.2.1/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - Unix Makefiles" /home/jundafeng/CLionProjects/test_cuda_global_device_pointer
 -- Configuring done
 -- Generating done
--- Build files have been written to: /home/jundafeng/CLionProjects/untitled/cmake-build-debug
+-- Build files have been written to: /home/jundafeng/CLionProjects/test_cuda_global_device_pointer/cmake-build-debug

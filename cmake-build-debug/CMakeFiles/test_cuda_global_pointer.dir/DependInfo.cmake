@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CUDA
-  "/home/jundafeng/CLionProjects/untitled/main.cu" "/home/jundafeng/CLionProjects/untitled/cmake-build-debug/CMakeFiles/test_cuda_global_pointer.dir/main.cu.o"
+  "/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/main.cu" "/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/cmake-build-debug/CMakeFiles/test_cuda_global_pointer.dir/main.cu.o"
   )
 set(CMAKE_CUDA_COMPILER_ID "NVIDIA")
 

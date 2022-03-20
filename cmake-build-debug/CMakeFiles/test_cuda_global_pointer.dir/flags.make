@@ -4,7 +4,7 @@
 # compile CUDA with /usr/local/cuda/bin/nvcc
 CUDA_DEFINES = 
 
-CUDA_INCLUDES = -I/home/jundafeng/CLionProjects/untitled/test_cuda_global_pointer
+CUDA_INCLUDES = -I/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/test_cuda_global_pointer
 
 CUDA_FLAGS = -g --generate-code=arch=compute_52,code=[compute_52,sm_52] -std=c++14
 

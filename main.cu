@@ -73,7 +73,7 @@ int eval(int inputLength = 10000) {
 
       dim3 threadsPerBlock(512);
       dim3 numBlock((inputLength-1)/512+1);
-      vec_add_kernel<<<threadsPerBlock,numBlock>>>(device_vec_in1,device_vec_in2,device_vec_out, inputLength);
+      vec_add_kernel<<<numBlock, threadsPerBlock>>>(device_vec_in1,device_vec_in2,device_vec_out, inputLength);
       cudaDeviceSynchronize();
 
       std::vector<uint32_t> cpuOutput(inputLength);
@@ -98,7 +98,8 @@ int eval(int inputLength = 10000) {
 }
 
 TEST_CASE("Vec_Add", "[vec_add]") {
-   SECTION("[inputSize:16191]") {
+   SECTION("[inputSize:161910]") {
       eval(161910);
    }
+
 }

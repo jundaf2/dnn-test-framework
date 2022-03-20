@@ -53,10 +53,10 @@ RM = /home/jundafeng/Desktop/clion-2021.2.1/bin/cmake/linux/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jundafeng/CLionProjects/untitled
+CMAKE_SOURCE_DIR = /home/jundafeng/CLionProjects/test_cuda_global_device_pointer
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jundafeng/CLionProjects/untitled/cmake-build-debug
+CMAKE_BINARY_DIR = /home/jundafeng/CLionProjects/test_cuda_global_device_pointer/cmake-build-debug
 
 # Utility rule file for ContinuousBuild.
 
@@ -82,6 +82,6 @@ CMakeFiles/ContinuousBuild.dir/clean:
 .PHONY : CMakeFiles/ContinuousBuild.dir/clean
 
 CMakeFiles/ContinuousBuild.dir/depend:
-	cd /home/jundafeng/CLionProjects/untitled/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jundafeng/CLionProjects/untitled /home/jundafeng/CLionProjects/untitled /home/jundafeng/CLionProjects/untitled/cmake-build-debug /home/jundafeng/CLionProjects/untitled/cmake-build-debug /home/jundafeng/CLionProjects/untitled/cmake-build-debug/CMakeFiles/ContinuousBuild.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/jundafeng/CLionProjects/test_cuda_global_device_pointer/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/jundafeng/CLionProjects/test_cuda_global_device_pointer /home/jundafeng/CLionProjects/test_cuda_global_device_pointer /home/jundafeng/CLionProjects/test_cuda_global_device_pointer/cmake-build-debug /home/jundafeng/CLionProjects/test_cuda_global_device_pointer/cmake-build-debug /home/jundafeng/CLionProjects/test_cuda_global_device_pointer/cmake-build-debug/CMakeFiles/ContinuousBuild.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ContinuousBuild.dir/depend
 

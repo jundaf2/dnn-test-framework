@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/jundafeng/CLionProjects/untitled/common/catch.hpp
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/common/catch.hpp
 TargetConditionals.h
 -
 cstdint
@@ -244,7 +244,7 @@ string
 vector
 -
 Foundation/Foundation.h
-/home/jundafeng/CLionProjects/untitled/common/Foundation/Foundation.h
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/common/Foundation/Foundation.h
 crtdbg.h
 -
 set
@@ -418,7 +418,7 @@ sstream
 cassert
 -
 
-/home/jundafeng/CLionProjects/untitled/common/fmt.hpp
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/common/fmt.hpp
 cassert
 -
 clocale
@@ -476,7 +476,7 @@ algorithm
 limits
 -
 
-/home/jundafeng/CLionProjects/untitled/common/utils.hpp
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/common/utils.hpp
 cuda.h
 -
 cuda_runtime.h
@@ -496,7 +496,7 @@ utility
 vector
 -
 
-/home/jundafeng/CLionProjects/untitled/funcs.h
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/funcs.h
 cuda.h
 -
 algorithm
@@ -504,15 +504,15 @@ algorithm
 random
 -
 
-/home/jundafeng/CLionProjects/untitled/global.h
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/global.h
 
-/home/jundafeng/CLionProjects/untitled/kernels.cuh
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/kernels.cuh
 common/catch.hpp
-/home/jundafeng/CLionProjects/untitled/common/catch.hpp
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/common/catch.hpp
 common/fmt.hpp
-/home/jundafeng/CLionProjects/untitled/common/fmt.hpp
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/common/fmt.hpp
 common/utils.hpp
-/home/jundafeng/CLionProjects/untitled/common/utils.hpp
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/common/utils.hpp
 string
 -
 vector
@@ -522,11 +522,11 @@ cuda.h
 cuda_runtime.h
 -
 
-/home/jundafeng/CLionProjects/untitled/main.cu
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/main.cu
 funcs.h
-/home/jundafeng/CLionProjects/untitled/funcs.h
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/funcs.h
 kernels.cuh
-/home/jundafeng/CLionProjects/untitled/kernels.cuh
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/kernels.cuh
 global.h
-/home/jundafeng/CLionProjects/untitled/global.h
+/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/global.h
 
