@@ -1,29 +1,92 @@
-cmake_minimum_required(VERSION 3.20)
-
-project(test_cuda_global_pointer LANGUAGES CXX CUDA)
-
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_COLOR_MAKEFILE ON)
 set(VERBOSE_BUILD ON)
-set(CMAKE_CXX_STANDARD 11)
+
 set(CMAKE_CUDA_STANDARD 14)
+set(ENABLE_CUDA ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CUDA_EXTENSIONS OFF)
+
 set(DEFAULT_BUILD_TYPE "Release")
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+project(nnTest LANGUAGES C CXX CUDA)
+set(${PROJECT_NAME}_VERSION 0.0.0)
+enable_language(C CXX CUDA)
+
+# Prohibit in-source build
+if (${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
+    message(FATAL_ERROR " does not support in-source CMake builds at this time.")
+endif (${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
+
+set(COMMON_FILES_DIR ${PROJECT_SOURCE_DIR}/common)
+set(Torch_DIR ${PROJECT_SOURCE_DIR}/libtorch/share/cmake/Torch)
+set(Torch_INC ${PROJECT_SOURCE_DIR}/libtorch/include)
+
+### Find Required Libs ###
+find_package(CUDA REQUIRED)
+find_package(CUDAToolkit)
+find_package(Torch REQUIRED)
+include_directories(${Torch_INC})
+
+# Find CUDA ARCH VERSION
+include(FindCUDA/select_compute_arch)
+CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
+string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+SET( ${CUDA_ARCH_LIST})
+list (GET CUDA_ARCH_LIST -2 ARCH_NUMBER)
+SET(CUDA_ARCH sm_${ARCH_NUMBER})
+SET(CUDA_COMPUTE compute_${ARCH_NUMBER})
+
+
+message(--------------------------------------------)
+message(CUDA_ARCH = ${CUDA_ARCH})
+message(CUDA_COMPUTE = ${CUDA_COMPUTE})
+message(--------------------------------------------)
+
+
+
+set(CUDA_PATH ${CUDA_TOOLKIT_ROOT_DIR})
+list(APPEND CMAKE_MODULE_PATH ${CUDA_PATH}/lib64)
+
+set(COMMON_HEADER_DIRS ${CUDA_PATH}/include)
+set(COMMON_LIB_DIRS ${CUDA_PATH}/lib64)
+
+set(CUDA_FLAGS "--expt-extended-lambda --expt-relaxed-constexpr --compiler-options -fPIC -g -G -Xcompiler -Wall")
+set(CUDA_FLAGS "-gencode code=${CUDA_ARCH},arch=${CUDA_COMPUTE} ${CUDA_FLAGS}")
+string(REGEX REPLACE "^sm_" "" ARCH_NUMBER "${CUDA_ARCH}")
+if ("${CUDA_ARCH}" STREQUAL "sm_${ARCH_NUMBER}")
+	set(CMAKE_CUDA_ARCHITECTURES "${ARCH_NUMBER}")
+else()
+	message(FATAL_ERROR "Unknown CUDA_ARCH: ${CUDA_ARCH}")
+endif()
+message(STATUS "Using CUDA architecture: ${CUDA_ARCH}")
+
+set(CUDA_FLAGS "-ccbin=${CMAKE_CXX_COMPILER} ${CUDA_FLAGS}")
+set(CMAKE_CUDA_HOST_LINK_LAUNCHER ${CMAKE_CXX_COMPILER})
+set(CMAKE_CUDA_FLAGS "${CUDA_FLAGS}" CACHE STRING "CUDA flags set" FORCE)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -no-pie -lpthread")
+
+
+# Headers and sources
+set(MAIN_FILE ${PROJECT_SOURCE_DIR}/main.cc)
+
+# Declaring the files
+set(ALL_SRC ${HEADERS} ${MAIN_FILE} ${SOURCES} ${COMMON_FILES_DIR})
+foreach(FNAME IN LISTS ALL_SRC)
+    message(${FNAME})
+endforeach()
+
+add_compile_options(-Wno-unknown-pragmas)
 
 include(CTest)
-add_executable(test_cuda_global_pointer
-        main.cu
-        funcs.h
-        kernels.cuh
-        common/fmt.hpp
-        common/catch.hpp
-        common/clara.hpp
-        common/utils.hpp
-        global.h)
+add_executable(nntest ${ALL_SRC})
+target_include_directories(nntest PRIVATE ${COMMON_HEADER_DIRS} SYSTEM ${CUDA_INCLUDE_DIRS} ${HDR_FILES_DIR} ${TORCH_INCLUDES} ${COMMON_FILES_DIR})
+target_link_directories(nntest PRIVATE ${COMMON_LIB_DIRS})
+target_link_libraries(nntest PRIVATE ${CUDA_LIBRARIES} CUDA::cublas CUDA::cublasLt ${TORCH_LIBRARIES})
 
-target_link_libraries(test_cuda_global_pointer ${CUDA_LIBRARIES})
-include_directories(test_cuda_global_pointer ${CUDA_INCLUDE_DIRS})
-set_target_properties(test_cuda_global_pointer PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
-        CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+set_target_properties(nntest PROPERTIES POSITION_INDEPENDENT_CODE ON)

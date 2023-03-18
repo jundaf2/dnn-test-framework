@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/cmake-build-debug",
-  "command": "/usr/local/cuda/bin/nvcc -forward-unknown-to-host-compiler  -I/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/test_cuda_global_pointer -g --generate-code=arch=compute_52,code=[compute_52,sm_52] -std=c++14 -x cu -dc /home/jundafeng/CLionProjects/test_cuda_global_device_pointer/main.cu -o CMakeFiles/test_cuda_global_pointer.dir/main.cu.o",
-  "file": "/home/jundafeng/CLionProjects/test_cuda_global_device_pointer/main.cu"
-}
-]
