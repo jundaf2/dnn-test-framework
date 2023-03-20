@@ -69,12 +69,16 @@ cp pytorch/build/lib/libtorch.so pytorch/build/lib/libtorch_cpu.so pytorch/build
 cp -r pytorch/torch/share/cmake libtorch/share
 ```
 ## nnTest APIs
+
 ### public APIs (use outside the class)
 * `virtual void init_data()`
 * `virtual void run_torch_dnn()`
 * `virtual void run_my_dnn()`
 * `void verify()` (Already written, no need to override or modify)
+
 ### protected APIs (use inside the class)
+The generated data and the data registered to be tested assume the data has been linearized in a row-major (C/C++/CUDA default) manner. While BLAS and Eigen assumes data are stored in a col-major manner.
+
 1. When overriding `init_data`
     * `void set_random_seed(unsigned int random_seed)`
     * `void set_print_el_num(int n)` How many 
@@ -175,6 +179,6 @@ See the Pytorch documentations,
 ### Implementation
 Some unoptimized kernels are in `linear_layer_kernels.cu`. GEMMs are based on the cuBLAS.
 
-### Multi-head Attention implemented in Eigen
- 
+## Multi-head Attention implemented in Eigen using nnTest
+See https://github.com/jundaf2/eigenMHA
 
