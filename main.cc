@@ -31,7 +31,7 @@ public:
     float rand_range = 2;
     this->set_random_seed(seed);
     this->set_print_el_num(64);
-    // weight and bias for Q
+    // weight and bias 
     this->set_input_vec(this->gen_rand_input(-rand_range,rand_range,weight_len).data(), weight_len, "linear_weight");
     this->set_input_vec(this->gen_rand_input(-rand_range,rand_range,bias_len).data(), bias_len, "linear_bias");
 

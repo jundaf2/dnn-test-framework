@@ -46,8 +46,6 @@ class nnTest {
     std::map<std::string,std::vector<float>> input_data_bank;
   protected:
     
-
-
     void register_torch_test_data(const torch::Tensor& x, std::string name){
       torch::Tensor x_c = x.to(torch::kCPU).contiguous();
       torch_test_data_bank.emplace(name, std::vector<float>(x_c.data_ptr<float>(), x_c.data_ptr<float>() + x_c.numel()));
