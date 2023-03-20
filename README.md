@@ -174,3 +174,6 @@ See the Pytorch documentations,
 ### Implementation
 Some unoptimized kernels are in `linear_layer_kernels.cu`. GEMMs are based on the cuBLAS.
 
+### Multi-head Attention implemented in Eigen
+ 
+
