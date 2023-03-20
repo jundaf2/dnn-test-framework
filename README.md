@@ -1,11 +1,24 @@
-# eigenDNN -- An Open-source Toy DL Testing Framework.
+# nnTest -- A DL Library Testing Framework.
+<center><img src="./nntest1.PNG" ...></center>
+<center> 2 tests pass and 2 tests fail.</center>
+<center><img src="./nntest2.PNG" ...></center>
+<center> All tests pass.</center>
+
+nnTest mainly focuses on providing a testing framework that helps you train and inference Deep Neural Networks using YOUR OWN LIBRARY.
+
+In this repo, we 
+* integrate libtorch to serve as the computation library that generates ground truth for your own library implementation.
+* use CATCH2 as the easy-to-use unit testing framework.
+* provide a example that uses CUDA and cuBLAS to implement both the FWD and BWD pass of Linear Layer in DNN.
+
+# How to use the framework
+## clone and install LibTorch
 To clone this repo, use
 ```
-git clone --recursive
-
-cd ./eigen
-git checkout 3.4   # use eigen 3.4 required by EigenRand
-
+git clone https://github.com/jundaf2/dnn-test-framework
+```
+To install the libtorch using pytorch submodule,
+```
 git clone https://github.com/pytorch/pytorch --recursive && cd pytorch
 git submodule sync
 git submodule update --init --recursive
@@ -14,7 +27,6 @@ cd pytorch
 export USE_CUDA=False
 export BUILD_TEST=False
 python ./tools/build_libtorch.py
-
 ```
 Copy the following folders to `libtorch/include`
 - `pytorch/torch/include/torch`
@@ -55,195 +67,110 @@ cp -r pytorch/torch/include/torch pytorch/torch/include/caffe2 pytorch/torch/inc
 cp pytorch/build/lib/libtorch.so pytorch/build/lib/libtorch_cpu.so pytorch/build/lib/libc10.so libtorch/lib
 cp -r pytorch/torch/share/cmake libtorch/share
 ```
-## Introduction
-nnTest mainly focuses on providing a testing framework for train and inference Deep Neural Networks using YOUR OWN LIBRARY.
+## nnTest APIs
+### public APIs (use outside the class)
+* `virtual void init_data()`
+* `virtual void run_torch_dnn()`
+* `virtual void run_my_dnn()`
+* `void verify()` (Already written, no need to override or modify)
+### protected APIs (use inside the class)
+1. When overriding `init_data`
+    * `void set_random_seed(unsigned int random_seed)`
+    * `void set_print_el_num(int n)` How many 
+    * `std::vector<float> gen_rand_input(float rand_min, float rand_max, size_t len)`
+    * `std::vector<float> gen_constant_input(float c, size_t len)`
+    * `void set_input_vec(const float* x, size_t len, std::string name)`
+2. When overriding `run_torch_dnn`
+    * `void get_input_ten(torch::Tensor& ten, std::string name, torch::TensorOptions options)`
+    * `void register_torch_test_data(const torch::Tensor& x, std::string name)`
 
-eigenDNN
-* libtorch (built from pytorch directly) serves as the computation library that generates ground truth for your own library implementation.
-* Eigen serves as the computation library that generates ground truth for GPU implementations.
+3. When overriding `run_my_dnn`
+    * `std::vector<float> get_input_vec(std::string name)`
+    * `void register_raw_test_data(const float* x, size_t len, std::string name)`
+4. Some logistics
+    * `void print_vec(const std::vector<float> outv, std::string outn, int start = 0)`
+    * `std::string print_str_vec(const std::vector<float> outv, int start)`
+    * `void print_ten(const torch::Tensor& x, std::string name)`
 
+## nnTest example
+### create a class for your DL module in a LibTorch fashion
+Here we only provide skeleton, for the detailed example, see `main.cc`
 
-What is to be initialized:
+```
+struct test_Linear : public nn_test::nnTest, torch::nn::Module {
+private:
+    torch::nn::Linear linear{nullptr};
+    unsigned batch, in_features, out_features;
+public:
+    // constructor
+    test_Linear(int batch, int in_features, int out_features){
+        this->linear = register_module("linear", torch::nn::Linear(in_features, out_features));
+    }
+
+    // init and register data
+    void init_data() override{
+        this->set_random_seed(seed);
+        this->set_print_el_num(64); // how many elements is output
+
+        this->set_input_vec(this->gen_rand_input(-rand_range,rand_range,weight_len).data(), weight_len, "linear_weight");
+        this->set_input_vec(this->gen_rand_input(-rand_range,rand_range,bias_len).data(), bias_len, "linear_bias");
+        this->set_input_vec(this->gen_rand_input(-rand_range,rand_range,in_data_len).data(), in_data_len, "linear_in");
+        this->set_input_vec(this->gen_rand_input(-rand_range,rand_range,out_data_len).data(), out_data_len, "target");
+    }
+
+    // Your DNN routine
+    void run_my_dnn() override{
+        // Register the data to be test
+        this->register_raw_test_data(output, batch*out_features, "output");
+        this->register_raw_test_data(linear_in_grad, batch*in_features, "linear_in_grad");
+        this->register_raw_test_data(linear_weight_grad, in_features*out_features, "linear_weight_grad");
+        this->register_raw_test_data(linear_bias_grad, out_features, "linear_bias_grad");
+    }
+
+    // Torch DNN routine
+    void run_torch_dnn() override{
+        // Register the data to be compared with
+        this->register_torch_test_data(linear_out, "output");
+        this->register_torch_test_data(linear_in.grad(), "linear_in_grad");
+        this->register_torch_test_data(this->linear->weight.grad(), "linear_weight_grad");
+        this->register_torch_test_data(this->linear->bias.grad(), "linear_bias_grad");
+    }
+}
+```
+### Initialize nnTest && Add test cases and sections.
+```
+int eval_linear(unsigned batch, unsigned in_features,unsigned out_features){
+  test_Linear test_linear(batch,in_features,out_features);
+  test_linear.init_data();
+  test_linear.run_my_dnn();
+  test_linear.run_torch_dnn();
+  test_linear.verify();
+}
+
+TEST_CASE("Linear", "[Linear Layer]") {
+  SECTION("[4,50,100]") {
+    eval_linear(4,50,100);
+  }
+}
+```
+
+## Specs
+### What is to be initialized:
 * weights
 * input data
 * target data
 
-What is to be tested:
+### What is to be tested:
 * forward result of the network output
 * forward result of the potential intermediate variables
 * backward gradients of the weights
 * backward gradients of potential intermediate variables 
 
-Currently, it focuses on
-
-* Forward and backward of Multi-Head Attention (MHA).
-  * with a pytorch `mha.py` that illustrates the multi-head attention our eigenDNN / cuTransDNN implements
-  
-
-<center><img src="./figures/MHA.png" ...></center>
-<center>Which part will we implement in the transformer model.</center>
-
-## Notes
-### MSE Loss Function
-
-Loss function, as the origin of DL system, is a basic component inside a DL system.
-
-<center><img src="./figures/MSE Loss.PNG" ...></center>
-<center> MSE Loss.</center>
-
-
-```
-eidnnStatus_t eidnnMSELoss(
-    eidnnHandle_t handle,
-    const Tensor<float, 3> &output, 
-    const Tensor<float, 3> &target,
-    Tensor<float, 0> &loss,
-    Tensor<float, 3> &d_loss);
-```
-
-### Linear
-cuDNN has no specific APIs for linear layer.
-
-In eiDNN, we have
-
-```
-eidnnStatus_t eidnnLinearForward(eidnnHandle_t handle,
-                    const Tensor<float, 3>& x, // data
-                    const Tensor<float, 2>& w, // weight
-                    const Tensor<float, 1>& bias, // bias
-                    Tensor<float, 3>& y);
-```
-
-```
-eidnnStatus_t eidnnLinearBackward(eidnnHandle_t handle,
-                     const Tensor<float, 3>& dy,
-                     const Tensor<float, 3>& x,
-                     const Tensor<float, 2>& w,
-                     Tensor<float, 3>& dx, // gradient of input data
-                     Tensor<float, 2>& dw // accumulated gradient of input weight
-                     );
-eidnnStatus_t eidnnLinearBackward(eidnnHandle_t handle,
-                     const Tensor<float, 3>& dy,
-                     const Tensor<float, 3>& x,
-                     const Tensor<float, 2>& w,
-                     Tensor<float, 3>& dx, // gradient of input data
-                     Tensor<float, 2>& dw, // accumulated gradient of weight
-                     Tensor<float, 1>& dbias // accumulated gradient of bias
-                     );
-```
-
-### MatMul
-
-$$ C = \beta * C + \alpha*Op_c(MatMul(Op_a(A),Op_b(B))) $$
-
-, where $Op_m(M)$ is whether to transpose matrix $M$ or not in the forward pass.
-
-cuDNN has no specific APIs for matrix-multiply operation.
-
-In eiDNN, we have
-
-```
-eidnnStatus_t eidnnStridedBatchedGemmForward(
-    eidnnHandle_t handle,
-    float alpha,
-    float beta,
-    bool trans_A, // Op_a
-    bool trans_B, // Op_b
-    bool trans_C, // Op_c
-    const Tensor<float, 4> &A, 
-    const Tensor<float, 4> &B, 
-    Tensor<float, 4> &C);
-```
-
-```
-eidnnStatus_t eidnnStridedBatchedGemmBackward(
-    eidnnHandle_t handle,
-    float alpha,
-    float beta,
-    bool trans_A, // Op_a
-    bool trans_B, // Op_b
-    bool trans_C, // Op_c
-    const Tensor<float, 4> &A, // A
-    const Tensor<float, 4> &B, // B
-    const Tensor<float, 4> &d_C, // gradient of C
-    Tensor<float, 4> &d_A, // gradient of A
-    Tensor<float, 4> &d_B // gradient of B
-    );
-```
-### Softmax
-cuDNN has the following APIs for softmax operation.
-* [cudnnSoftmaxForward()](https://docs.nvidia.com/deeplearning/cudnn/api/index.html#cudnnSoftmaxForward)
-* [cudnnSoftmaxBackward()](https://docs.nvidia.com/deeplearning/cudnn/api/index.html#cudnnSoftmaxBackward)
-
-In eiDNN, we have
-
-```
-eidnnStatus_t eidnnSoftmaxForward(eidnnHandle_t handle,
-                    eidnnSoftmaxAlgorithm_t algo,
-                    eidnnSoftmaxMode_t mode,
-                    const Tensor<float, 4>& x,
-                    Tensor<float, 4>& y);
-```
-
-```
-eidnnStatus_t eidnnSoftmaxBackward(eidnnHandle_t handle,
-                     eidnnSoftmaxAlgorithm_t algo,
-                     eidnnSoftmaxMode_t mode,
-                     const Tensor<float, 4>& y,
-                     const Tensor<float, 4>& dy,
-                     Tensor<float, 4>& dx);
-```
-
-### Dropout
-cuDNN has the following APIs for dropout operation.
-* [cudnnCreateDropoutDescriptor()]()
-* [cudnnDestroyDropoutDescriptor()]()
-* [cudnnDropoutGetStatesSize()]()
-* [cudnnDropoutGetReserveSpaceSize()]()
-* [cudnnDropoutForward()]()
-* [cudnnGetDropoutDescriptor()]()
-* [cudnnRestoreDropoutDescriptor()]()
-* [cudnnSetDropoutDescriptor()]()
-* [cudnnDropoutBackward()]()
-
-In eiDNN, we have
-
-```
-// dropout rate, 
-// pointer to memory space of states (allocated by forward pass), 
-// size of memory space in bytes (calculated by forward pass), 
-// random seed
-using eidnnDropoutDescriptor_t = std::tuple<float, void*, size_t, unsigned long long>; 
-```
-```
-eidnnStatus_t eidnnDropoutForward(
-    eidnnHandle_t                       handle,
-    eidnnDropoutDescriptor_t      &dropoutDesc,
-    const Tensor<float, 4>         &x, // input data
-    Tensor<float, 4>               &y // input data after dropout
-    );
-```
-
-```
-eidnnStatus_t eidnnDropoutBackward(
-    eidnnHandle_t                   handle,
-    const eidnnDropoutDescriptor_t  dropoutDesc,
-    const Tensor<float, 4>       &dy, // gradient of dropout output data
-    Tensor<float, 4>             &dx // gradient of dropout input data
-    );
-```
-
-### Multi-head Attention
-cuDNN has the following APIs for MHA operations
-* [cudnnCreateAttnDescriptor()]()
-* [cudnnSetAttnDescriptor()]()
-* [cudnnGetAttnDescriptor()]()
-* [cudnnSetAttnDescriptor()]()
-* [cudnnDestroyAttnDescriptor()]()
-* [cudnnGetMultiHeadAttnBuffers()]()
-* [cudnnGetMultiHeadAttnWeights()]()
-* [cudnnMultiHeadAttnForward()]()
-* [cudnnMultiHeadAttnBackwardData()]()
-* [cudnnMultiHeadAttnBackwardWeights()]()
-In eiDNN, we have
+## Linear Layer and MSE Loss
+### Theory
+See the Pytorch documentations,
+* https://pytorch.org/docs/master/generated/torch.nn.Linear.html
+* https://pytorch.org/docs/master/generated/torch.nn.MSELoss.html#torch.nn.MSELoss
+### Implementation
+Some unoptimized kernels are in `linear_layer_kernels.cu`. GEMMs are based on the cuBLAS.
 

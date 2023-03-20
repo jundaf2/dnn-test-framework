@@ -8,10 +8,11 @@
 #include <string>
 #include <type_traits>
 #include <map>
-#include "catch.hpp"
-#include "fmt.hpp"
-#include "utils.hpp"
-#include "clara.hpp"
+#include <random>
+#include "common/catch.hpp"
+#include "common/fmt.hpp"
+#include "common/utils.hpp"
+#include "common/clara.hpp"
 #include "torch/torch.h"
 
 
@@ -33,10 +34,18 @@ class nnTest {
 
     int print_el_num = 64;
 
-  protected:
+    
+    void print_data_bank(std::map<std::string,std::vector<float>>& data_bank, std::string bank_name){
+      for (auto it = data_bank.begin(); it != data_bank.end(); ++it) {
+        fmt::print(std::string(ANSI_COLOR_CYAN) + "** {}  {}" + ANSI_COLOR_RESET + "  =  {}\n", bank_name,  it->first, it->second);
+      }
+    }
+
     std::map<std::string,std::vector<float>> torch_test_data_bank;
     std::map<std::string,std::vector<float>> raw_test_data_bank;
     std::map<std::string,std::vector<float>> input_data_bank;
+  protected:
+    
 
 
     void register_torch_test_data(const torch::Tensor& x, std::string name){
@@ -53,14 +62,14 @@ class nnTest {
     }
 
     std::vector<float> get_input_vec(std::string name){
-      std::vector<float> vec;
       if (input_data_bank.find(name) != input_data_bank.end()){
-        vec = input_data_bank[name];
+        return input_data_bank[name];
       }
       else{
         std::cout << ANSI_COLOR_RED << name << " not found" << ANSI_COLOR_RESET << std::endl;
+        std::vector<float> vec;
+        return vec;
       }
-      return vec;
     }
 
     void get_input_ten(torch::Tensor& ten, std::string name, torch::TensorOptions options){
@@ -87,7 +96,7 @@ class nnTest {
       return vec;
     }
 
-    void print_vec(const std::vector<float> outv, std::string outn, int start) {
+    void print_vec(const std::vector<float> outv, std::string outn, int start = 0) {
       std::cout << outn << ": ";
       std::copy(outv.begin() + start, outv.begin() + start + print_el_num, std::ostream_iterator<float>(std::cout, ", "));
       std::cout << std::endl;
@@ -105,18 +114,12 @@ class nnTest {
       std::cout << name << ": " << x << std::endl;
     }
 
-    void print_data_bank(std::map<std::string,std::vector<float>>& data_bank, std::string bank_name){
-      for (auto it = data_bank.begin(); it != data_bank.end(); ++it) {
-        fmt::print(std::string(ANSI_COLOR_CYAN) + "** {}  {}" + ANSI_COLOR_RESET + "  =  {}\n", bank_name,  it->first, it->second);
-      }
-    }
 
+    void set_print_el_num(int n) {print_el_num = n;}
   public:
     virtual void init_data() = 0;
     virtual void run_torch_dnn() = 0;
     virtual void run_my_dnn() = 0;
-
-    void set_print_el_num(int n) {print_el_num = n;}
 
     void verify() {
       ASSERT(torch_test_data_bank.size() == raw_test_data_bank.size(), "test data and verify data should have the same number of entries", __LINE__);
