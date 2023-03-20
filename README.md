@@ -1,15 +1,16 @@
 # nnTest -- A DL Library Testing Framework.
-<center><img src="./nntest1.PNG" ...></center>
-<center> 2 tests pass and 2 tests fail.</center>
-<center><img src="./nntest2.PNG" ...></center>
-<center> All tests pass.</center>
-
 nnTest mainly focuses on providing a testing framework that helps you train and inference Deep Neural Networks using YOUR OWN LIBRARY.
 
 In this repo, we 
 * integrate libtorch to serve as the computation library that generates ground truth for your own library implementation.
 * use CATCH2 as the easy-to-use unit testing framework.
 * provide a example that uses CUDA and cuBLAS to implement both the FWD and BWD pass of Linear Layer in DNN.
+
+
+<center><img src="./nntest1.PNG" ...></center>
+<center> 2 tests pass and 2 tests fail.</center>
+<center><img src="./nntest2.PNG" ...></center>
+<center> All tests pass.</center>
 
 # How to use the framework
 ## clone and install LibTorch
